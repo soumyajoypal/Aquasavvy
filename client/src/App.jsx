@@ -16,6 +16,7 @@ import GameLevel from "./Pages/GamePages/GameLevel/GameLevel";
 import TaskPage from "./Pages/GamePages/TaskPage/TaskPage";
 import Leaderboard from "./Pages/LeaderBoardPage/LeaderBoardPage";
 import { getLeaderBoard } from "./lib/Slices/leaderBoardSlice";
+import { fetchTutorialProgress } from "./lib/Slices/tutorialSlice";
 
 const App = () => {
   const { user, otpVerification } = useSelector((state) => state.user);

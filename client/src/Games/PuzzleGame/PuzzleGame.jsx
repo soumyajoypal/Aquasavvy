@@ -17,6 +17,7 @@ import {
   faPlay,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { updateUserProgress } from "../../lib/Slices/userProgressSlice";
 const randomLetterGenerator = () => {
   return String.fromCharCode(65 + Math.floor(Math.random() * 26));
 };
@@ -279,7 +280,7 @@ const PuzzleGame = () => {
           dispatch(addWaterLevel(10));
         }
       }
-      dispatch(updateScore());
+      dispatch(updateUserProgress());
       dispatch(setTaskComplete());
       setShowResults(true);
     }

@@ -4,6 +4,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { clearError, loginUser } from "../../lib/Slices/userSlice";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { fetchTutorialProgress } from "../../lib/Slices/tutorialSlice";
+import { fetchUserProgress } from "../../lib/Slices/userProgressSlice";
 const LoginPage = () => {
   const dispatch = useDispatch();
   const [form, setForm] = useState({ username: "", password: "" });
@@ -16,16 +18,17 @@ const LoginPage = () => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     dispatch(clearError());
-    const resultAction = dispatch(loginUser(form));
+
+    const resultAction = await dispatch(loginUser(form)); // <-- await here
+
     if (loginUser.fulfilled.match(resultAction)) {
+      dispatch(fetchTutorialProgress());
       navigate(path, { replace: true });
     }
   };
-
   useEffect(() => {
     dispatch(clearError());
   }, [dispatch]);

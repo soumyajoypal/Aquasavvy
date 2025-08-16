@@ -9,7 +9,9 @@ const errorHandler = require("./middleware/errorHandler");
 const userRouter = require("./routes/userRouter");
 const uploadRouter = require("./routes/uploadRouter");
 const taskRouter = require("./routes/taskRouter");
+const tutorialRouter = require("./routes/tutorialRouter");
 const leaderBoardRouter = require("./routes/leaderBoardRouter");
+const userProgressRouter = require("./routes/userProgressRouter");
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -19,6 +21,8 @@ app.use("/api/user", userRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/tasks", taskRouter);
 app.use("/api/leaderBoard", leaderBoardRouter);
+app.use("/api/tutorial", tutorialRouter);
+app.use("/api/userProgress", userProgressRouter);
 app.use(errorHandler);
 const port = process.env.PORT || 3000;
 const start = async () => {

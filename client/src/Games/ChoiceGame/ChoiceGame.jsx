@@ -14,6 +14,7 @@ import {
   faPlay,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { updateUserProgress } from "../../lib/Slices/userProgressSlice";
 
 const colorMap = {
   best: "from-green-400 to-teal-600 hover:from-teal-600 hover:to-green-400",
@@ -93,6 +94,7 @@ const ChoiceGame = () => {
         dispatch(addWaterLevel(value));
       }
       dispatch(updateScore());
+      dispatch(updateUserProgress());
       dispatch(setTaskComplete());
     }
   }, [result]);
@@ -114,11 +116,18 @@ const ChoiceGame = () => {
             {isTaskRunning ? (
               <p>
                 Playing...{" "}
-                <FontAwesomeIcon icon={faHourglass} className="ml-2"></FontAwesomeIcon>
+                <FontAwesomeIcon
+                  icon={faHourglass}
+                  className="ml-2"
+                ></FontAwesomeIcon>
               </p>
             ) : (
               <p>
-                Play Quiz <FontAwesomeIcon icon={faPlay} className="ml-2"></FontAwesomeIcon>
+                Play Quiz{" "}
+                <FontAwesomeIcon
+                  icon={faPlay}
+                  className="ml-2"
+                ></FontAwesomeIcon>
               </p>
             )}
           </button>

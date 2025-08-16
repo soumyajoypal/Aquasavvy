@@ -22,6 +22,14 @@ const taskSchema = new mongoose.Schema(
       type: String,
       enum: ["easy", "medium", "hard"],
     },
+    threshold: {
+      type: Number,
+      default: 0.7,
+    },
+    replayCost: {
+      type: Number,
+      default: 0.25,
+    },
   },
   options
 );

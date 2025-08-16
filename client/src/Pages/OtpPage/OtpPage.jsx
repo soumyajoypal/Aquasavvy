@@ -116,9 +116,17 @@ const OtpPage = () => {
   }, [dispatch]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-stone-950 via-stone-800 to-stone-600">
-      <h1 className="text-3xl font-bold mb-6 text-white montserrat">Verify Your OTP</h1>
-      <div className="flex gap-2 mb-6" onPaste={handlePaste}>
+    <div
+      className="flex flex-col items-center justify-center min-h-screen p-6 
+    bg-gradient-to-b from-slate-950 via-slate-800 to-slate-700 text-white"
+    >
+     
+      <h1 className="text-4xl font-extrabold mb-8 tracking-wide montserrat drop-shadow-md">
+        Verify Your OTP
+      </h1>
+
+     
+      <div className="flex gap-3 mb-6" onPaste={handlePaste}>
         {otp.map((value, index) => (
           <input
             key={index}
@@ -127,36 +135,58 @@ const OtpPage = () => {
             ref={(el) => (inputRefs.current[index] = el)}
             onChange={(e) => handleChange(e, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            className="inconsolata w-12 h-12 text-center text-2xl border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-600"
+            className="inconsolata w-14 h-14 text-center text-2xl font-semibold 
+          border border-slate-500 rounded-lg 
+          bg-slate-900 text-slate-100 
+          focus:outline-none focus:ring-4 focus:ring-sky-500/60 
+          shadow-inner transition-all duration-200"
           />
         ))}
       </div>
+
       <div className="mb-6 text-center">
-        <h4 className="inconsolata text-lg mb-4 text-gray-200">
-          Didn't Receive OTP?
+        <h4 className="inconsolata text-lg mb-3 text-gray-300">
+          Didn’t receive OTP?{" "}
           <button
             onClick={() => handleClick(true)}
             disabled={isResending}
-            className="ml-2 text-blue-600 hover:text-blue-900 transition-colors"
+            className="text-sky-400 font-medium hover:text-sky-300 disabled:opacity-50 transition-colors"
           >
             {isResending ? "Resending OTP..." : "Resend OTP"}
           </button>
         </h4>
-        <p className="inconsolata text-gray-200">
-          {timer > 0 ? `OTP Expires in: ${formatTime(timer)}` : `OTP expired!`}
+        <p className="inconsolata text-sm text-gray-400">
+          {timer > 0 ? (
+            <>
+              ⏳ Expires in{" "}
+              <span className="text-sky-400">{formatTime(timer)}</span>
+            </>
+          ) : (
+            <span className="text-red-400">OTP expired!</span>
+          )}
         </p>
       </div>
+
+     
       <button
         onClick={() => handleClick(timer > 0 ? false : true)}
-        className="inconsolata font-bold text-lg bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-900 transition-colors"
+        className="inconsolata font-bold text-lg px-8 py-3 rounded-lg 
+      bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 
+      hover:from-sky-500 hover:to-indigo-700 
+      active:scale-95 transition-all duration-300 shadow-lg"
       >
         {timer > 0 ? "Submit OTP" : "Resend OTP"}
       </button>
-      {isVerifying && <h4 className="mt-4 text-gray-600">Verifying OTP...</h4>}
-      {!isVerifying && !isResending && otpVerification && (
-        <h4 className="mt-4 text-green-600">OTP Verified!</h4>
+
+      {isVerifying && (
+        <h4 className="mt-6 text-gray-300 animate-pulse">Verifying OTP...</h4>
       )}
-      {error && <h1 className="mt-4 text-red-600">{error.msg}</h1>}
+      {!isVerifying && !isResending && otpVerification && (
+        <h4 className="mt-6 text-green-400 font-semibold">✅ OTP Verified!</h4>
+      )}
+      {error && (
+        <h1 className="mt-6 text-red-400 font-semibold">❌ {error.msg}</h1>
+      )}
     </div>
   );
 };

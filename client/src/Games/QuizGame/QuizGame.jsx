@@ -16,9 +16,18 @@ import {
   faHourglass,
   faPlay,
 } from "@fortawesome/free-solid-svg-icons";
+import {
+  completeTutorial,
+  updateTutorialProgress,
+} from "../../lib/Slices/tutorialSlice";
+import { updateUserProgress } from "../../lib/Slices/userProgressSlice";
 
 const QuizGame = () => {
   const dispatch = useDispatch();
+  const {
+    currentStep,
+    tutorial: { active },
+  } = useSelector((state) => state.tutorial);
   const { currentTask, isTaskRunning, isTaskComplete } = useSelector(
     (state) => state.game
   );
@@ -81,8 +90,12 @@ const QuizGame = () => {
       dispatch(addScore(timeLeft * 2));
       dispatch(addWaterLevel(10));
     }
-    dispatch(updateScore());
+    dispatch(updateUserProgress());
     dispatch(setTaskComplete());
+    if (currentStep === 11) {
+      dispatch(completeTutorial());
+      dispatch(updateTutorialProgress({ completed: true, active: false }));
+    }
   };
 
   useEffect(() => {

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Joyride, { STATUS } from "react-joyride";
-import { setIntroTrue } from "../../lib/Slices/tutorialSlice";
+import { nextStep } from "../../lib/Slices/tutorialSlice";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import { useNavigate } from "react-router-dom";
 import "./HudComponent.css";
+import { usePrevious } from "@uidotdev/usehooks";
 
 const getScoreFromLevel = (level) => {
   if (level === 5) return 2000;
@@ -15,18 +16,62 @@ const getScoreFromLevel = (level) => {
 };
 
 const Hud = () => {
-  const { hudComponent } = useSelector((state) => state.tutorial);
+  const {
+    currentStep,
+    tutorial: { active },
+  } = useSelector((state) => state.tutorial);
   const { user } = useSelector((state) => state.user);
   const { currentTask, isTaskRunning } = useSelector((state) => state.game);
-  const [run, setRun] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [run, setRun] = useState(false);
   const handleJoyrideCallback = (data) => {
     const { status } = data;
-
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-      dispatch(setIntroTrue("hudComponent"));
+      dispatch(nextStep());
     }
+  };
+
+  const [updates, setUpdates] = useState([]);
+
+  // Store previous values
+  const prevScore = usePrevious(user.score);
+  const prevCoins = usePrevious(user.coins);
+  const prevWater = usePrevious(user.groundWaterLevel);
+
+  useEffect(() => {
+    if (prevScore !== undefined && user.score !== prevScore) {
+      const diff = user.score - prevScore;
+      if (diff !== 0)
+        addUpdate(
+          `${diff > 0 ? "+" : ""}${diff} Score`,
+          diff > 0 ? "text-green-400" : "text-red-400"
+        );
+    }
+    if (prevCoins !== undefined && user.coins !== prevCoins) {
+      const diff = user.coins - prevCoins;
+      if (diff !== 0)
+        addUpdate(
+          `${diff > 0 ? "+" : ""}${diff} Coins`,
+          diff > 0 ? "text-yellow-400" : "text-red-400"
+        );
+    }
+    if (prevWater !== undefined && user.groundWaterLevel !== prevWater) {
+      const diff = user.groundWaterLevel - prevWater;
+      if (diff !== 0)
+        addUpdate(
+          `${diff > 0 ? "+" : ""}${diff} Water`,
+          diff > 0 ? "text-blue-400" : "text-red-400"
+        );
+    }
+  }, [user.score, user.coins, user.groundWaterLevel]);
+
+  const addUpdate = (text, colorClass) => {
+    const id = Date.now();
+    setUpdates((prev) => [...prev, { id, text, colorClass }]);
+    setTimeout(() => {
+      setUpdates((prev) => prev.filter((u) => u.id !== id));
+    }, 20000);
   };
 
   const steps = [
@@ -70,67 +115,84 @@ const Hud = () => {
   ];
   const percentage = (user.score / getScoreFromLevel(user.playerLevel)) * 100;
 
+  useEffect(() => {
+    if (currentStep === 9) {
+      setRun(true);
+    }
+  }, [currentStep]);
+
   return (
     <>
       <Joyride
         steps={steps}
         continuous
-        run={!hudComponent}
+        run={run}
         showSkipButton
+        showProgress
         disableOverlayClose
         callback={handleJoyrideCallback}
         locale={{
-          back: "Previous", // Custom text for the Back button
-          last: "Finish", // Custom text for the Last button (usually the Finish button)
-          next: "Next", // Custom text for the Next button
-          skip: "Skip", // Custom text for the Skip button
+          back: "◀ Previous",
+          last: "🎉 Finish",
+          next: "Next ▶",
+          skip: "✖ Skip",
         }}
         styles={{
           options: {
-            arrowColor: "#fff",
-            backgroundColor: "#fff",
-            overlayColor: "rgba(0, 0, 0, 0.5)",
-            primaryColor: "#000",
-            textColor: "#fff",
-            width: 300,
+            arrowColor: "#0f172a", // matches blue-950
+            backgroundColor: "#0f172a", // tooltip bg same as HUD top
+            overlayColor: "rgba(15, 23, 42, 0.7)", // semi-transparent blue overlay
+            primaryColor: "#38bdf8", // Tailwind sky-400 for highlights
+            textColor: "#f1f5f9", // slate-100 (soft white)
+            width: 320,
             zIndex: 1000,
           },
-          buttonNext: {
-            backgroundColor: " rgb(244 63 94)", // Tailwind green-500
-            color: "white",
-            borderRadius: 8,
-            padding: "10px 20px",
-            fontFamily: "Montserrat, sans-serif",
-            fontSize: "16px",
-            fontWeight: "600",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-            transition: "background-color 0.3s ease, transform 0.3s ease",
-          },
-          buttonBack: {
-            backgroundColor: "black", // Tailwind gray-50
-            color: "#ffffff",
-            borderRadius: 8,
-            padding: "10px 20px",
-            fontSize: "16px",
-            fontFamily: "Montserrat, sans-serif",
-            fontWeight: "400",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-            transition: "background-color 0.3s ease, transform 0.3s ease",
-          },
           tooltip: {
-            borderRadius: "20px", // Increase this value to make the corners more rounded
-            padding: "15px", // Adjust padding as needed
-            boxShadow: "0 6px 12px rgba(0, 0, 0, 0.2)", // Optional: Adjust the box shadow
+            borderRadius: "14px",
+            padding: "18px",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.4)",
             fontSize: "15px",
             fontFamily: "Montserrat, sans-serif",
+            fontWeight: 500,
+            lineHeight: 1.5,
+          },
+          buttonNext: {
+            background: "linear-gradient(90deg, #38bdf8, #0ea5e9)", // aqua gradient
+            color: "white",
+            borderRadius: "8px",
+            padding: "10px 20px",
+            fontFamily: "Montserrat, sans-serif",
+            fontSize: "15px",
             fontWeight: "600",
-            color: "black",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+            transition: "all 0.2s ease",
+          },
+          buttonBack: {
+            backgroundColor: "#1e3a8a", // blue-800
+            color: "white",
+            borderRadius: "8px",
+            padding: "10px 16px",
+            fontSize: "14px",
+            fontFamily: "Montserrat, sans-serif",
+            fontWeight: "500",
+          },
+          buttonSkip: {
+            backgroundColor: "transparent",
+            color: "#94a3b8", // slate-400
+            fontSize: "14px",
+            fontWeight: "500",
+            fontFamily: "Montserrat, sans-serif",
+            textDecoration: "underline",
+            marginRight: "10px",
+            cursor: "pointer",
           },
           spotlight: {
-            borderRadius: "20px", // Increase this value to make the spotlight's border radius bigger
+            borderRadius: "12px",
+            boxShadow: "0 0 0 4px rgba(56, 189, 248, 0.5)", // aqua glow
           },
         }}
       />
+
       <div className="absolute top-0 left-0 p-4 bg-gradient-to-b from-blue-950 to-blue-900 shadow-lg w-full flex justify-between items-center hud  h-16 text-white">
         <h2
           className="text-xl font-bold audiowide tracking-wide hud-title"
@@ -155,7 +217,7 @@ const Hud = () => {
           <div
             className="flex items-center space-x-4 cursor-pointer hud-profile"
             onClick={() => {
-              if (!isTaskRunning) {
+              if (!isTaskRunning && !active) {
                 navigate("/profile");
               }
             }}
@@ -200,6 +262,17 @@ const Hud = () => {
             </div>
           </div>
         </div>
+      </div>
+      {/* Floating score/coin/water updates */}
+      <div className="absolute top-20 right-6 flex flex-col space-y-2 items-end z-50">
+        {updates.map((u) => (
+          <div
+            key={u.id}
+            className={`px-4 py-2 rounded-lg bg-gray-800 bg-opacity-80 shadow-lg text-sm font-bold ${u.colorClass} animate-fade-up`}
+          >
+            {u.text}
+          </div>
+        ))}
       </div>
     </>
   );

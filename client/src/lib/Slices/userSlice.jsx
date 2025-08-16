@@ -31,7 +31,7 @@ export const registerUser = createAsyncThunk(
       const userData = response.data.data;
       return userData;
     } catch (error) {
-      return rejectWithValue(error.response?.data);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );

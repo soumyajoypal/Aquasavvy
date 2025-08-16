@@ -1,6 +1,7 @@
 const { StatusCodes } = require("http-status-codes");
 const User = require("../models/userSchema");
 const Task = require("../models/taskSchema");
+const UserProgress = require("../models/userProgressSchema");
 const { BadRequest, NotFound } = require("../errors");
 
 const getLeaderBoard = async (req, res) => {
@@ -43,16 +44,24 @@ const updateResult = async (req, res) => {
   if (!user) {
     return res.status(404).json({ msg: `User with ID ${id} not found!` });
   }
-  user.score = score;
-  user.coins = coins;
-  user.groundWaterLevel = groundWaterLevel;
-  user.playerLevel = playerLevel;
-  const taskAlreadyCompleted = user.completedTasks.some((completedTask) =>
-    completedTask.task.equals(taskId)
-  );
-  if (!taskAlreadyCompleted) {
+  // const userProgress = await UserProgress.findOne({ user: id });
+  // const taskAlreadyCompleted = userProgress.elements.some((element) =>
+  //   element.levels.some((level) =>
+  //     level.tasks.some((t) => t.task && t.task.equals(taskId) && t.completed)
+  //   )
+  // );
+  if (true) {
     user.completedTasks.push({ task: taskId });
+    user.score = score;
+    user.coins = coins;
+    user.groundWaterLevel = groundWaterLevel;
+  } else {
+    // user.score = score * task.replayCost;
+    user.score = 0;
+    user.coins = coins * task.replaceOne;
   }
+  user.playerLevel = playerLevel;
+
   await user.save();
   const topUsers = await User.find({})
     .sort({ score: -1 })

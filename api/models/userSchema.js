@@ -54,7 +54,7 @@ const userSchema = new mongoose.Schema(
     },
     coins: {
       type: Number,
-      default: 0,
+      default: 600,
     },
     score: {
       type: Number,

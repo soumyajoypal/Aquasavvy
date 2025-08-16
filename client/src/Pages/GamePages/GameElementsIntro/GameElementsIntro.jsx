@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import aqua from "../../../assets/aqua/aqua.png";
 import Joyride, { STATUS } from "react-joyride";
 import {
   nextStep,
-  setIntroTrue,
-  setSelectedElement,
+  setTutorialActive,
+  setTutorialDeactive,
 } from "../../../lib/Slices/tutorialSlice";
 import farm from "../../../assets/IntroPageAssets/farm.png";
 import home from "../../../assets/IntroPageAssets/home.png";
@@ -13,7 +13,11 @@ import industry from "../../../assets/IntroPageAssets/industry.png";
 import "./GameElementsInto.css";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faLock,
+  faLockOpen,
+} from "@fortawesome/free-solid-svg-icons";
 
 const ElementMap = [
   { name: "Farm", imgSrc: farm },
@@ -23,12 +27,15 @@ const ElementMap = [
 
 const GameElementsIntro = () => {
   const dispatch = useDispatch();
-  const { gameElementsIntro, isTutorialComplete } = useSelector(
-    (state) => state.tutorial
-  );
-  const [currentStep, setCurrentStep] = useState(!gameElementsIntro ? 0 : null);
-  const navigate = useNavigate();
+  const {
+    tutorial: { active },
+    currentStep,
+  } = useSelector((state) => state.tutorial);
 
+  const elements = useSelector((state) => state.progress.elements);
+
+  const [tutorialStep, setTutorialStep] = useState(active ? 0 : null);
+  const navigate = useNavigate();
   const steps = [
     {
       target: `.farm`,
@@ -101,13 +108,13 @@ const GameElementsIntro = () => {
 
   const handleJoyride = (data) => {
     const { status, index } = data;
-    if (currentStep === 3) {
-      setCurrentStep(0);
+    if (index === steps.length - 1) {
+      setTutorialStep(0);
     } else {
-      setCurrentStep(index);
+      setTutorialStep(index);
     }
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
-      dispatch(setIntroTrue("gameElementsIntro"));
+      dispatch(nextStep());
     }
   };
 
@@ -115,7 +122,7 @@ const GameElementsIntro = () => {
     <section className="min-h-screen w-full relative ">
       <Joyride
         steps={steps}
-        run={!gameElementsIntro}
+        run={active}
         continuous
         showProgress={false}
         showSkipButton
@@ -123,72 +130,82 @@ const GameElementsIntro = () => {
         spotlightPadding={10}
         disableOverlayClose
         locale={{
-          back: "Previous",
-          last: "Finish",
-          next: "Next",
-          skip: "Skip",
+          back: "◀ Previous",
+          last: "🎉 Finish",
+          next: "Next ▶",
+          skip: "✖ Skip",
         }}
         styles={{
           options: {
             zIndex: 10000,
-            primaryColor: "#34d399",
+            primaryColor: "#34d399", // emerald green
             backgroundColor: "#ffffff",
-            textColor: "#333333",
-            borderRadius: 8,
+            textColor: "#1f2937", // gray-800
+            borderRadius: 12,
             arrowColor: "#ffffff",
-            overlayColor: "rgba(0, 0, 0, 0.5)",
+            overlayColor: "rgba(0, 0, 0, 0.55)",
+            width: 320,
           },
           buttonNext: {
-            backgroundColor: "rgb(4 120 87)",
+            background: "linear-gradient(90deg, #34d399, #059669)", // emerald → green
             color: "#ffffff",
-            borderRadius: 8,
+            borderRadius: 10,
             padding: "10px 20px",
             fontFamily: "Montserrat, sans-serif",
-            fontSize: "16px",
-            fontWeight: "400",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-            transition: "background-color 0.3s ease, transform 0.3s ease",
+            fontSize: "15px",
+            fontWeight: "600",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.25)",
+            transition: "all 0.25s ease",
           },
           buttonBack: {
-            backgroundColor: "rgb(101 163 13)",
-            color: "#ffffff",
-            borderRadius: 8,
-            padding: "10px 20px",
-            fontSize: "16px",
+            backgroundColor: "#f1f5f9", // gray-100
+            color: "#374151", // gray-700
+            borderRadius: 10,
+            padding: "10px 18px",
+            fontSize: "14px",
             fontFamily: "Montserrat, sans-serif",
-            fontWeight: "400",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-            transition: "background-color 0.3s ease, transform 0.3s ease",
+            fontWeight: "500",
+            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
+            transition: "all 0.25s ease",
           },
           buttonSkip: {
-            backgroundColor: "#edf2f7",
-            color: "#2d3748",
-            borderRadius: 8,
-            padding: "10px 20px",
-            fontSize: "16px",
+            backgroundColor: "transparent",
+            color: "#ef4444", // red-500
+            fontSize: "14px",
+            fontWeight: "600",
             fontFamily: "Montserrat, sans-serif",
-            fontWeight: "400",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-            transition: "background-color 0.3s ease, transform 0.3s ease",
+            textDecoration: "underline",
+            cursor: "pointer",
           },
           tooltip: {
-            borderRadius: 12,
-            boxShadow: "0 6px 12px rgba(0, 0, 0, 0.2)",
-            padding: "15px",
-            fontSize: "18px",
-            fontFamily: "Inconsolata, sans-serif",
-            fontWeight: "600",
-            color: "black",
+            borderRadius: 14,
+            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.25)",
+            padding: "18px",
+            fontSize: "16px",
+            fontFamily: "Inter, sans-serif",
+            fontWeight: "500",
+            lineHeight: "1.6",
+            background: "linear-gradient(145deg, #ffffff, #f9fafb)", // subtle gradient
+            color: "#111827",
           },
           tooltipContent: {
             display: "flex",
             alignItems: "center",
+            gap: "8px",
+          },
+          spotlight: {
+            borderRadius: "12px",
+            boxShadow: "0 0 0 4px rgba(52, 211, 153, 0.5)", // emerald glow
           },
         }}
       />
+
       <button
         onClick={() => {
           navigate("/");
+          if (active) {
+            dispatch(setTutorialDeactive());
+          }
         }}
         className="w-[50px] h-[50px] rounded-full bg-white cursor-pointer absolute top-5 left-5 z-50 hover:scale-110 transition-all duration-100 ease-in-out"
       >
@@ -198,49 +215,78 @@ const GameElementsIntro = () => {
       <div className="absolute inset-0 grid grid-cols-3 w-[98%] h-[98%] overflow-hidden m-auto ">
         {ElementMap.map((item, index) => {
           const { name, imgSrc } = item;
+
+          const progress = elements.find(
+            (el) => el.name === name.toLowerCase()
+          );
+          const unlocked = progress?.unlocked;
+
+          const isFarm = name.toLowerCase() === "farm";
+          const isActiveTutorialFarm = active && currentStep === 4 && isFarm;
+
           return (
             <div
               key={index}
               className={`relative group flex flex-col items-center justify-center m-2 rounded-lg transition-transform duration-300
-    ${
-      isTutorialComplete || name.toLowerCase() === "farm"
-        ? "cursor-pointer hover:scale-105"
-        : "cursor-not-allowed"
-    }
-    ${
-      !isTutorialComplete && gameElementsIntro && name.toLowerCase() === "farm"
-        ? "shadow-lg shadow-green-400 animate-pulse"
-        : ""
-    }
-    bg-white/10 ${name.toLowerCase()}`}
+        ${
+          (!active && unlocked) || isFarm
+            ? "cursor-pointer hover:scale-105 hover:shadow-xl hover:shadow-green-400/30"
+            : "cursor-not-allowed"
+        }
+        ${
+          isActiveTutorialFarm ? "shadow-lg shadow-green-400 animate-pulse" : ""
+        }
+        bg-white/10 backdrop-blur-md border border-white/10 ${name.toLowerCase()}`}
               onClick={() => {
-                if (
-                  isTutorialComplete ||
-                  (!isTutorialComplete && item.name.toLowerCase() === "farm")
-                ) {
-                  navigate(`/element/${item.name.toLowerCase()}`);
+                if ((!active && unlocked) || (active && isFarm)) {
+                  navigate(`/element/${name.toLowerCase()}`);
                 }
               }}
             >
+              {/* Lock Icon */}
+              <span className="absolute top-4 right-4 text-3xl font-bold text-white z-20">
+                {active || (!active && unlocked) ? (
+                  <FontAwesomeIcon
+                    icon={faLockOpen}
+                    className="text-yellow-400 drop-shadow-[0_0_5px_rgba(255,255,0,0.6)]"
+                  />
+                ) : (
+                  <FontAwesomeIcon
+                    icon={faLock}
+                    className="text-yellow-400 drop-shadow-[0_0_5px_rgba(255,255,0,0.6)]"
+                  />
+                )}
+              </span>
+
+              {/* Locked overlay effect */}
+              {!active && !unlocked && !isFarm && (
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/30 rounded-lg z-10 backdrop-blur-[2px] flex items-center justify-center"></div>
+              )}
+
+              {/* Image */}
               <img
                 src={imgSrc}
                 alt={`${name} Image`}
-                className={`object-contain w-96 h-96 mb-4 `}
+                className={`object-contain w-96 h-96 mb-4 transition-all duration-300 ${
+                  !unlocked && !isFarm ? "opacity-40 blur-[1px]" : "opacity-100"
+                }`}
               />
+
+              {/* Name label */}
               <h1
                 className={`font-bold text-white text-5xl transition-opacity duration-300 liu-jian ${
-                  currentStep === index
+                  tutorialStep === index
                     ? "opacity-100"
                     : "opacity-0 group-hover:opacity-100"
                 }`}
               >
                 {name}
               </h1>
-              {!isTutorialComplete &&
-                gameElementsIntro &&
-                name.toLowerCase() !== "farm" && (
-                  <div className="absolute inset-0 bg-black/80 rounded-lg z-20"></div>
-                )}
+
+              {/* Tutorial dark overlay (only for locked during tutorial) */}
+              {active && currentStep === 4 && !isFarm && (
+                <div className="absolute inset-0 bg-black/80 rounded-lg z-20"></div>
+              )}
             </div>
           );
         })}

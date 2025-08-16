@@ -8,9 +8,15 @@ import {
   faArrowLeft,
   faPlayCircle,
 } from "@fortawesome/free-solid-svg-icons";
+import { useDispatch, useSelector } from "react-redux";
+import { setTutorialActive } from "../../lib/Slices/tutorialSlice";
 
 const StartPage = () => {
+  const {
+    tutorial: { completed },
+  } = useSelector((state) => state.tutorial);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const profileButton = () => {
     navigate("/profile");
   };
@@ -41,18 +47,20 @@ const StartPage = () => {
         <p className="text-lg md:text-2xl mb-8 montserrat font-light">
           Conserve Groundwater, Save the Future!
         </p>
-        <div className="flex gap-5 justify-center">
-          <Link to="/tutorial">
-            <button className="px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-300 hover:from-emerald-300 hover:to-teal-700 text-white text-2xl tracking-wider montserrat font-semibold rounded shadow-lg transform transition-all duration-300 hover:scale-110">
-              Tutorial
-            </button>
-          </Link>
-          <Link to="/tutorial">
-            <button className="px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-300 hover:from-emerald-300 hover:to-teal-700 text-white text-2xl tracking-wider montserrat font-semibold rounded shadow-lg transform transition-all duration-300 hover:scale-110">
-              Start Game <FontAwesomeIcon icon={faPlayCircle}></FontAwesomeIcon>
-            </button>
-          </Link>
-        </div>
+
+        <button
+          className="px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-300 hover:from-emerald-300 hover:to-teal-700 text-white text-2xl tracking-wider montserrat font-semibold rounded shadow-lg transform transition-all duration-300 hover:scale-110"
+          onClick={() => {
+            if (!completed) {
+              dispatch(setTutorialActive());
+              navigate("/tutorial");
+            } else {
+              navigate("/gameElements");
+            }
+          }}
+        >
+          Start Game <FontAwesomeIcon icon={faPlayCircle}></FontAwesomeIcon>
+        </button>
 
         <p className="mt-6 text-lg text-gray-200 max-w-xl mx-auto inconsolata">
           AquaSavvy is an educational game that teaches you about groundwater

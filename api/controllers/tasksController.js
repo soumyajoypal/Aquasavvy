@@ -1,5 +1,6 @@
 const { BadRequest, NotFound } = require("../errors/index");
 const { Quiz, Puzzle, Choice } = require("../models/gamesSchema");
+const Tasks = require("../models/taskSchema");
 const createTasks = async (req, res) => {
   const { gameId } = req.params;
   if (!gameId) {
@@ -47,4 +48,13 @@ const getTasks = async (req, res) => {
   return res.status(200).json({ data: tasks, msg: "Successfully Received!" });
 };
 
-module.exports = { createTasks, getTasks };
+const getLevelTasks = async (req, res) => {
+  const { element, level } = req.query;
+  if (!element || !level) {
+    throw new BadRequest("Element and Level are required!");
+  }
+  const tasks = await Tasks.find({ element, level });
+  return res.status(200).json({ data: tasks, msg: "Successfully Received!" });
+};
+
+module.exports = { createTasks, getTasks, getLevelTasks };

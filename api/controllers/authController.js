@@ -4,6 +4,74 @@ const otpGenerator = require("../utils/otpGenerator");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
 const { BadRequest, NotFound } = require("../errors");
+const mongoose = require("mongoose");
+
+const UserProgress = require("../models/userProgressSchema");
+
+const Task = require("../models/taskSchema");
+
+async function generateDefaultUserProgress(userId) {
+  const tasks = await Task.find().lean();
+
+  // Group tasks by element and level
+  const grouped = {};
+  for (const task of tasks) {
+    if (!grouped[task.element]) grouped[task.element] = {};
+    if (!grouped[task.element][task.level])
+      grouped[task.element][task.level] = [];
+    grouped[task.element][task.level].push(task);
+  }
+  const TASK_ORDER = { quiz: 0, choice: 1, puzzle: 2 };
+
+  const byTaskType = (a, b) => {
+    const aKey = String(a.type || "").toLowerCase();
+    const bKey = String(b.type || "").toLowerCase();
+
+    const aOrder = TASK_ORDER.hasOwnProperty(aKey)
+      ? TASK_ORDER[aKey]
+      : Number.MAX_SAFE_INTEGER;
+    const bOrder = TASK_ORDER.hasOwnProperty(bKey)
+      ? TASK_ORDER[bKey]
+      : Number.MAX_SAFE_INTEGER;
+
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return String(a._id).localeCompare(String(b._id));
+  };
+  const elements = Object.entries(grouped).map(
+    ([elementName, levelsObj], elementIndex) => ({
+      name: elementName,
+      unlocked: elementIndex === 0,
+      levels: Object.entries(levelsObj).map(
+        ([levelName, levelTasks], levelIndex) => {
+          // IMPORTANT: levelTasks must be full Task docs with .type present
+          const sortedTasks = levelTasks.slice().sort(byTaskType);
+
+          return {
+            level: levelName,
+            unlocked: elementIndex === 0 && levelIndex === 0,
+            score: 0,
+            waterLevel: 100,
+            tasks: sortedTasks.map((t, taskIndex) => ({
+              task: t._id,
+              unlocked:
+                elementIndex === 0 && levelIndex === 0 && taskIndex === 0,
+              completed: false,
+              failed: false,
+              attempts: Number.MAX_SAFE_INTEGER,
+              score: 0,
+              bestScore: 0,
+            })),
+          };
+        }
+      ),
+    })
+  );
+
+  return {
+    user: userId,
+    elements,
+  };
+}
 
 const registerUser = async (req, res) => {
   const { username, email } = req.body;
@@ -22,6 +90,11 @@ const registerUser = async (req, res) => {
       .json({ message: "OTP resent. Please verify your email!" });
   }
   user = await User.create(req.body);
+
+  // here the default user progress will be created
+  const defaultProgress = await generateDefaultUserProgress(user._id);
+  await UserProgress.create(defaultProgress);
+
   await otpGenerator(user, email);
   return res
     .status(StatusCodes.CREATED)
