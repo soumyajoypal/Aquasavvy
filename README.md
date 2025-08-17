@@ -7,6 +7,8 @@ Instead of reading boring stats, kids actively **play, learn, and practice water
 
 Players explore three worlds — **Farm, Home, and Industry** — where they solve real-life problems like fixing leaks, setting up drip irrigation, or reusing greywater. With **coins, badges, and leaderboards**, AquaSavvy makes conservation **fun, rewarding, and impactful**.
 
+Check out the live website: 🌐 [https://aquasavvy.netlify.app](https://aquasavvy.netlify.app)
+
 ---
 
 ## 🚀 Tech Stack
