@@ -62,7 +62,7 @@ const updateUserProgress = async (req, res) => {
   if (!task.completed) {
     task.score = score;
   } else {
-    user.score = 60;
+    task.score = 60;
   }
   task.bestScore = Math.max(task.bestScore || 0, score);
 
