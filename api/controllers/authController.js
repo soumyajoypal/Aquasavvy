@@ -22,6 +22,9 @@ async function generateDefaultUserProgress(userId) {
     grouped[task.element][task.level].push(task);
   }
   const TASK_ORDER = { quiz: 0, choice: 1, puzzle: 2 };
+  const LEVEL_ORDER = {
+    farm: ["crop", "irrigation", "pesticide"],
+  };
 
   const byTaskType = (a, b) => {
     const aKey = String(a.type || "").toLowerCase();
@@ -38,12 +41,17 @@ async function generateDefaultUserProgress(userId) {
     return String(a._id).localeCompare(String(b._id));
   };
   const elements = Object.entries(grouped).map(
-    ([elementName, levelsObj], elementIndex) => ({
-      name: elementName,
-      unlocked: elementIndex === 0,
-      levels: Object.entries(levelsObj).map(
-        ([levelName, levelTasks], levelIndex) => {
-          // IMPORTANT: levelTasks must be full Task docs with .type present
+    ([elementName, levelsObj], elementIndex) => {
+      let levelsArr = Object.entries(levelsObj);
+      if (LEVEL_ORDER[elementName]) {
+        const order = LEVEL_ORDER[elementName];
+        levelsArr.sort(([a], [b]) => order.indexOf(a) - order.indexOf(b));
+      }
+
+      return {
+        name: elementName,
+        unlocked: elementIndex === 0,
+        levels: levelsArr.map(([levelName, levelTasks], levelIndex) => {
           const sortedTasks = levelTasks.slice().sort(byTaskType);
 
           return {
@@ -62,9 +70,9 @@ async function generateDefaultUserProgress(userId) {
               bestScore: 0,
             })),
           };
-        }
-      ),
-    })
+        }),
+      };
+    }
   );
 
   return {

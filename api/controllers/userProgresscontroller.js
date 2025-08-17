@@ -1,6 +1,7 @@
 const { StatusCodes } = require("http-status-codes");
 const UserProgress = require("../models/userProgressSchema");
 const Task = require("../models/taskSchema");
+const { translateAliases } = require("../models/userSchema");
 const fetchUserProgress = async (req, res) => {
   const { id } = req.user;
   console.log(id);
@@ -25,10 +26,7 @@ const fetchUserProgress = async (req, res) => {
 
 const updateUserProgress = async (req, res) => {
   const { id } = req.user;
-  console.log("run");
-
   const { elementName, levelName, taskId, score } = req.body;
-  console.log(id);
 
   const userProgress = await UserProgress.findOne({ user: id });
   if (!userProgress) {
@@ -43,16 +41,29 @@ const updateUserProgress = async (req, res) => {
 
   const task = level.tasks.find((t) => t.task.toString() === taskId);
   if (!task) return res.status(404).json({ message: "Task not found" });
-  // const Task = await Task.find({ _id: taskId });
 
-  task.attempts -= 1;
+  const dbTask = await Task.findById(taskId);
+  if (!dbTask) return res.status(404).json({ message: "Task not found in DB" });
+
+  task.attempts = (task.attempts || 0) - 1;
   if (task.attempts === 0) {
     task.attempts = Number.MAX_SAFE_INTEGER;
   }
-  if (!task.completed) {
+
+  if (score >= dbTask.threshold * 100) {
+    console.log(dbTask.threshold * 100);
+
     task.completed = true;
+    task.failed = false;
+  } else {
+    task.failed = true;
+    console.log("failed");
   }
-  task.score = score;
+  if (!task.completed) {
+    task.score = score;
+  } else {
+    user.score = 60;
+  }
   task.bestScore = Math.max(task.bestScore || 0, score);
 
   if (task.completed) {
@@ -74,14 +85,10 @@ const updateUserProgress = async (req, res) => {
           (e) => e.name === elementName
         );
         if (currentElementIndex + 1 < userProgress.elements.length) {
-          // Tasks need to be designed
+          // If you want to unlock next element too
           // userProgress.elements[currentElementIndex + 1].unlocked = true;
-          // userProgress.elements[
-          //   currentElementIndex + 1
-          // ].levels[0].unlocked = true;
-          // userProgress.elements[
-          //   currentElementIndex + 1
-          // ].levels[0].tasks[0].unlocked = true;
+          // userProgress.elements[currentElementIndex + 1].levels[0].unlocked = true;
+          // userProgress.elements[currentElementIndex + 1].levels[0].tasks[0].unlocked = true;
         }
       }
     }

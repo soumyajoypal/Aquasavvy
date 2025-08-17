@@ -44,21 +44,20 @@ const updateResult = async (req, res) => {
   if (!user) {
     return res.status(404).json({ msg: `User with ID ${id} not found!` });
   }
-  // const userProgress = await UserProgress.findOne({ user: id });
-  // const taskAlreadyCompleted = userProgress.elements.some((element) =>
-  //   element.levels.some((level) =>
-  //     level.tasks.some((t) => t.task && t.task.equals(taskId) && t.completed)
-  //   )
-  // );
-  if (true) {
+  const userProgress = await UserProgress.findOne({ user: id });
+  const taskAlreadyCompleted = userProgress.elements.some((element) =>
+    element.levels.some((level) =>
+      level.tasks.some((t) => t.task && t.task.equals(taskId) && t.completed)
+    )
+  );
+  if (!taskAlreadyCompleted) {
     user.completedTasks.push({ task: taskId });
     user.score = score;
     user.coins = coins;
     user.groundWaterLevel = groundWaterLevel;
   } else {
-    // user.score = score * task.replayCost;
-    user.score = 0;
-    user.coins = coins * task.replaceOne;
+    user.score = 60;
+    user.coins = 100;
   }
   user.playerLevel = playerLevel;
 

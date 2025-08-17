@@ -102,11 +102,11 @@ const IrrigationLevel = () => {
 
   const tasks = [
     {
-      title: "Drip Irrigation Setup",
-      type: "puzzle",
-      icon: taskicon1,
+      title: "Mulching Practice",
+      type: "quiz",
+      icon: taskicon3,
       description:
-        "Set up a drip irrigation system on the farm to reduce water wastage and enhance efficient water use by delivering water directly to the roots of the crops",
+        "Apply mulch around plants to retain soil moisture, reduce evaporation, and minimize the need for additional irrigation, thereby conserving groundwater",
     },
     {
       title: "Rainwater Harvesting Installation",
@@ -116,11 +116,11 @@ const IrrigationLevel = () => {
         "Install a rainwater harvesting system to collect and store rainwater for irrigation purposes, reducing dependence on groundwater",
     },
     {
-      title: "Mulching Practice",
-      type: "quiz",
-      icon: taskicon3,
+      title: "Drip Irrigation Setup",
+      type: "puzzle",
+      icon: taskicon1,
       description:
-        "Apply mulch around plants to retain soil moisture, reduce evaporation, and minimize the need for additional irrigation, thereby conserving groundwater",
+        "Set up a drip irrigation system on the farm to reduce water wastage and enhance efficient water use by delivering water directly to the roots of the crops",
     },
   ];
 
@@ -187,7 +187,7 @@ const IrrigationLevel = () => {
                         dispatch(nextStep());
                       }
                       navigate(
-                        `/game/taskPage?element=farm&level=crop&type=${task.type}`
+                        `/game/taskPage?element=farm&level=irrigation&type=${task.type}`
                       );
                     }
                   }}

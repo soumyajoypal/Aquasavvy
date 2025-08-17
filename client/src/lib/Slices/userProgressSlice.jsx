@@ -2,6 +2,7 @@ import apiRequest from "../utils/apiRequest";
 
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { updateScore } from "./userSlice";
+import { faLaptopFile } from "@fortawesome/free-solid-svg-icons";
 
 const initialState = JSON.parse(localStorage.getItem("progress")) || {
   elements: [],
@@ -39,6 +40,8 @@ export const updateUserProgress = createAsyncThunk(
         elementName,
         levelName,
       });
+      console.log(response.data.data);
+
       await dispatch(updateScore()).unwrap();
       return response.data.data;
     } catch (error) {
