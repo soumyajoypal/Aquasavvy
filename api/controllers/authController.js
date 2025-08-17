@@ -133,11 +133,12 @@ const loginUser = async (req, res) => {
 
   const { password: _, ...userInfo } = user._doc;
 
-  res.cookie("token", token, {
+  res.cookie("token", jwtToken, {
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
+    secure: true, 
+    sameSite: "none", 
+    maxAge: 24 * 60 * 60 * 1000, 
   });
-
   return res
     .status(StatusCodes.OK)
     .json({ data: userInfo, message: "Login Successful!" });
